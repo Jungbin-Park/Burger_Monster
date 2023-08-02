@@ -11,13 +11,14 @@ public class MonsterStat : Stat
 
     void Start()
     {
+        maxHp = 100;
         hp = 100;
         damage = 10;
-        attackTime = 1;
-        attackDist = 1;
+        attackTime = 1.0f;
+        attackDist = 1.0f;
+        traceDist = 5.0f;
         spawnTime = 5;
         maxSpawn = 5;
-        traceDist = 5.0f;
     }
 
 }

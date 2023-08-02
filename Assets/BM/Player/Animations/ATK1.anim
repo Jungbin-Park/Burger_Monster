@@ -22912,7 +22912,7 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0.53333336
-    functionName: OnAttack1Trigger
+    functionName: OnAttack1Event
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
