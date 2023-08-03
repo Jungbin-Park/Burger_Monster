@@ -52,21 +52,25 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(0.3f);
             //float distance = Vector3.Distance(targetEnemy.position, playerTr.position);
-            float distance = (targetEnemy.position - playerTr.position).magnitude;
+            if(targetEnemy != null)
+            {
+                float distance = (targetEnemy.position - playerTr.position).magnitude;
 
-            if (distance <= playerStat.AttackDist)
-            {
-                agent.SetDestination(transform.position);
-                state = State.ATTACK;
+                if (distance <= playerStat.AttackDist)
+                {
+                    agent.SetDestination(transform.position);
+                    state = State.ATTACK;
+                }
+                else if (distance <= playerStat.TraceDist)
+                {
+                    state = State.MOVE;
+                }
+                else
+                {
+                    state = State.IDLE;
+                }
             }
-            else if (distance <= playerStat.TraceDist)
-            {
-                state = State.MOVE;
-            }
-            else
-            {
-                state = State.IDLE;
-            }
+            
         }
     }
 
@@ -94,8 +98,8 @@ public class PlayerController : MonoBehaviour
     private void UpdateIdle()
     {
         agent.isStopped = true;
-
-        FindEnemy();
+        if(targetEnemy == null)
+            FindEnemy();
     }
 
     private void FindEnemy()
@@ -103,17 +107,17 @@ public class PlayerController : MonoBehaviour
         // 주변 몬스터를 감지하여 저장
         Enemies = new List<GameObject>(GameObject.FindGameObjectsWithTag("MONSTER"));
         Transform nearestEnemy = null;
-        float maxDistance = Mathf.Infinity;
+
 
         // 가장 가까운 적 타겟으로 지정
         foreach(GameObject enemy in Enemies)
         {
-            float targetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+            float targetDistance = (targetEnemy.position - playerTr.position).magnitude;
 
-            if(targetDistance < maxDistance)
+            if (targetDistance < playerStat.TraceDist)
             {
                 nearestEnemy = enemy.transform;
-                maxDistance = targetDistance;
+                //maxDistance = targetDistance;
             }
         }
         targetEnemy = nearestEnemy;
@@ -141,7 +145,7 @@ public class PlayerController : MonoBehaviour
             anim.SetBool(hashAttack, true);
             Vector3 dir = targetEnemy.position - transform.position;
             Quaternion quat = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, quat, 50 * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, quat, 20 * Time.deltaTime);
         }
         else
         {

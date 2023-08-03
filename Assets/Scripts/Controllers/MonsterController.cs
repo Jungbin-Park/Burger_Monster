@@ -31,8 +31,14 @@ public class MonsterController : MonoBehaviour
     private readonly int hashAttackTime = Animator.StringToHash("attackTime");
     private readonly int hashDead = Animator.StringToHash("Dead");
 
-    // Start is called before the first frame update
-    void Start()
+    void OnEnable()
+    {
+        StartCoroutine(CheckMonsterState());
+
+        StartCoroutine(MonsterAction());
+    }
+
+    private void Awake()
     {
         monsterTr = GetComponent<Transform>();
         playerTr = GameObject.FindWithTag("PLAYER").GetComponent<Transform>();
@@ -40,10 +46,6 @@ public class MonsterController : MonoBehaviour
         anim = GetComponent<Animator>();
 
         monsterStat = gameObject.GetComponent<MonsterStat>();
-
-        StartCoroutine(CheckMonsterState());
-
-        StartCoroutine(MonsterAction());
     }
 
     IEnumerator CheckMonsterState()
@@ -96,6 +98,15 @@ public class MonsterController : MonoBehaviour
                     isDie = true;
                     agent.isStopped = true;
                     anim.SetTrigger(hashDead);
+                    GetComponent<SphereCollider>().enabled = false;
+
+                    yield return new WaitForSeconds(1.0f);
+                    
+                    monsterStat.Hp = 100;
+                    isDie = false;
+                    GetComponent<SphereCollider>().enabled = true;
+                    this.gameObject.SetActive(false);
+
                     break;
             }
             yield return new WaitForSeconds(0.3f);
@@ -122,7 +133,7 @@ public class MonsterController : MonoBehaviour
             anim.SetBool(hashAttack, true);
             Vector3 dir = playerTr.position - transform.position;
             Quaternion quat = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, quat, 50 * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, quat, 20 * Time.deltaTime);
         }
         
     }
