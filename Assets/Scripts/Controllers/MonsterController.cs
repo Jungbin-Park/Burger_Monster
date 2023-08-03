@@ -15,6 +15,7 @@ public class MonsterController : MonoBehaviour
     }
 
     MonsterStat monsterStat;
+    PlayerStat playerStat;
 
     public State state = State.IDLE;
 
@@ -46,6 +47,7 @@ public class MonsterController : MonoBehaviour
         anim = GetComponent<Animator>();
 
         monsterStat = gameObject.GetComponent<MonsterStat>();
+        playerStat = playerTr.GetComponent<PlayerStat>();
     }
 
     IEnumerator CheckMonsterState()
@@ -65,7 +67,6 @@ public class MonsterController : MonoBehaviour
 
             if (distance <= monsterStat.AttackDist)
             {
-                agent.SetDestination(transform.position);
                 state = State.ATTACK;
             }
             else if (distance <= monsterStat.TraceDist)
@@ -98,12 +99,16 @@ public class MonsterController : MonoBehaviour
                     isDie = true;
                     agent.isStopped = true;
                     anim.SetTrigger(hashDead);
+                    playerStat.Exp += 1;
+                    Debug.Log(playerStat.Exp);
                     GetComponent<SphereCollider>().enabled = false;
+                    GameManager.instance.ReturnMonsterToPool(this.gameObject);
 
                     yield return new WaitForSeconds(1.0f);
                     
                     monsterStat.Hp = 100;
                     isDie = false;
+                    state = State.IDLE;
                     GetComponent<SphereCollider>().enabled = true;
                     this.gameObject.SetActive(false);
 
@@ -116,6 +121,7 @@ public class MonsterController : MonoBehaviour
     void UpdateIdle()
     {
         agent.isStopped = true;
+        anim.SetBool(hashTrace, false);
     }
 
     void UpdateMove()
@@ -123,6 +129,7 @@ public class MonsterController : MonoBehaviour
         agent.SetDestination(playerTr.position);
         agent.isStopped = false;
         anim.SetBool(hashTrace, true);
+        anim.SetBool(hashAttack, false);
     }
 
     void UpdateAttack()

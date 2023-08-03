@@ -20,7 +20,7 @@ public class PlayerStat : Stat
     {
         maxHp = 100;
         hp = 100;
-        damage = 10;
+        damage = 50;
         attackTime = 1.0f;
         attackDist = 1.0f;
         attack2Dist = 2.0f;

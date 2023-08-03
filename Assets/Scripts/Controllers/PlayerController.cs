@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(0.3f);
             //float distance = Vector3.Distance(targetEnemy.position, playerTr.position);
-            if(targetEnemy != null)
+            if (targetEnemy != null)
             {
                 float distance = (targetEnemy.position - playerTr.position).magnitude;
 
@@ -70,7 +70,7 @@ public class PlayerController : MonoBehaviour
                     state = State.IDLE;
                 }
             }
-            
+
         }
     }
 
@@ -95,50 +95,52 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void UpdateIdle()
-    {
-        agent.isStopped = true;
-        if(targetEnemy == null)
-            FindEnemy();
-    }
-
     private void FindEnemy()
     {
-        // 주변 몬스터를 감지하여 저장
+        // 몬스터 저장
         Enemies = new List<GameObject>(GameObject.FindGameObjectsWithTag("MONSTER"));
         Transform nearestEnemy = null;
-
+        float maxDistance = Mathf.Infinity;
 
         // 가장 가까운 적 타겟으로 지정
-        foreach(GameObject enemy in Enemies)
+        foreach (GameObject enemy in Enemies)
         {
-            float targetDistance = (targetEnemy.position - playerTr.position).magnitude;
+            MonsterStat targetStat = enemy.GetComponent<MonsterStat>();
+            float targetDistance = (enemy.transform.position - playerTr.position).magnitude;
 
-            if (targetDistance < playerStat.TraceDist)
+            if (targetDistance <= maxDistance)
             {
                 nearestEnemy = enemy.transform;
-                //maxDistance = targetDistance;
+                maxDistance = targetDistance;
             }
         }
         targetEnemy = nearestEnemy;
     }
 
+    private void UpdateIdle()
+    {
+        agent.isStopped = true;
+        anim.SetBool(hashTrace, false);
+        anim.SetBool(hashAttack, false);
+        if (targetEnemy == null)
+            FindEnemy();
+    }
+
     private void UpdateMove()
     {
-        if(targetEnemy != null)
+        if (targetEnemy != null)
         {
             agent.SetDestination(targetEnemy.position);
             agent.isStopped = false;
             anim.SetBool(hashTrace, true);
-        }
-        else
-        {
-            FindEnemy();
+            anim.SetBool(hashAttack, false);
         }
     }
 
     private void UpdateAttack()
     {
+        FindEnemy();
+
         if (targetEnemy != null)
         {
             anim.SetFloat(hashAttackTime, playerStat.AttackTime);
@@ -147,10 +149,8 @@ public class PlayerController : MonoBehaviour
             Quaternion quat = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation, quat, 20 * Time.deltaTime);
         }
-        else
-        {
-            FindEnemy();
-        }
+
+        
     }
 
     // 애니메이션 이벤트
@@ -173,8 +173,9 @@ public class PlayerController : MonoBehaviour
 
     void OnAttack2Event()
     {
-        if(targetEnemy != null)
+        if (targetEnemy != null)
         {
+
             Collider[] nearEnemy = Physics.OverlapSphere(transform.position, playerStat.Attack2Dist);
 
             foreach (Collider coll in nearEnemy)
@@ -186,13 +187,7 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            state = State.IDLE;
-        }
-        
-
-        // 체력 회복 Skill
+        // TODO : 체력 회복 Skill
     }
 
 }

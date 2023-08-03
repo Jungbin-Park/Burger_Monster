@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,8 +9,6 @@ public class GameManager : MonoBehaviour
 {
     public GameObject monster;
 
-    [SerializeField]
-    int monsterCount = 0;
     [SerializeField]
     int maxMonsterCount = 5;
 
@@ -21,7 +20,7 @@ public class GameManager : MonoBehaviour
     float spawnTime = 5.0f;
 
     // 오브젝트 풀
-    public List<GameObject> monsterPool = new List<GameObject>();
+    public Queue<GameObject> monsterPool = new Queue<GameObject>();
 
     public static GameManager instance = null;
 
@@ -50,7 +49,7 @@ public class GameManager : MonoBehaviour
     void Spawn()
     {
         GameObject _monster = GetMonsterInPool();
-        NavMeshAgent agent = _monster?.GetOrAddComponent<NavMeshAgent>();
+        //NavMeshAgent agent = _monster?.GetOrAddComponent<NavMeshAgent>();
 
         Vector3 randPos;
         Vector3 randDir = Random.insideUnitSphere * Random.Range(0, spawnRadius);
@@ -68,19 +67,31 @@ public class GameManager : MonoBehaviour
             var _monster = Instantiate<GameObject>(monster);
             _monster.name = $"Monster_{i:00}";
             _monster.SetActive(false);
-            monsterPool.Add(_monster); 
+            monsterPool.Enqueue(_monster); 
         }
     }
 
     public GameObject GetMonsterInPool()
     {
-        foreach(var _monster in monsterPool)
+        //foreach(var _monster in monsterPool)
+        //{   
+        //    if(_monster.activeSelf == false)
+        //    {
+        //        return _monster;
+        //    }
+        //}
+        if(monsterPool.Count > 0)
         {
-            if(_monster.activeSelf == false)
-            {
-                return _monster;
-            }
+            GameObject nextMonster = monsterPool.Dequeue();
+            if(nextMonster.activeSelf == false)
+                return nextMonster;
         }
         return null;
     }
+
+    public void ReturnMonsterToPool(GameObject monster)
+    {
+        monsterPool.Enqueue(monster);
+    }
 }
+
